@@ -1,0 +1,21 @@
+{
+  "name": "smartcontractar",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:up": "turbo run db:up",
+    "db:down": "turbo run db:down",
+    "db:migrate": "turbo run db:migrate --"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.9.7",
+    "eslint": "^7.32.0",
+    "eslint-config-custom": "workspace:*",
+    "prettier": "^2.5.1",
+    "turbo": "latest"
+  },
+  "name": "turbo-serverless-rest-vitejs-vercel"
+}
