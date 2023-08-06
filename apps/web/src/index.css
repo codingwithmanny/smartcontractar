@@ -3,122 +3,165 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply bg-zinc-900 text-zinc-400;
-  }
-  h1, h2, h3, h4, h5, h6, p, ul, ol, pre, hr {
-    @apply mb-8;
-  }
-  hr {
-    @apply border-zinc-700;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-zinc-100 font-medium;
-  }
-  h1 {
-    @apply text-4xl;
-  }
-  h2 {
-    @apply text-3xl;
-  }
-  h3 {
-    @apply text-2xl;
-  }
-  h4 {
-    @apply text-xl;
-  }
-  h5 {
-    @apply text-lg;
-  }
-  h6 {
-    @apply text-base;
+  #diff table,
+  .diff table {
+    @apply border-separate border-spacing-0 rounded-lg shadow-sm;
   }
 
-  pre {
-    @apply bg-zinc-800 text-zinc-200 rounded p-4 overflow-auto max-h-96;
+  #diff table tbody tr td pre,
+  .diff table tbody tr td pre {
+    @apply text-sm;
   }
 
-  button, button[type="button"], button[type="submit"], .button {
-    @apply inline-block leading-10 text-white font-medium bg-zinc-700 px-4 py-0 rounded hover:bg-zinc-600;
+  #diff table tbody tr:first-child td,
+  .diff table tbody tr:first-child td {
+    @apply border-l-0 border-r border-b border-zinc-100;
   }
 
-  label {
-    @apply block text-zinc-400 text-sm mb-2;
-  }
-
-  input[disabled], textarea[disabled], select[disabled], button[disabled] {
-    @apply opacity-30;
-  }
-
-  input[type="text"], input[type="email"], input[type="number"], select {
-    @apply block w-full max-w-lg leading-10 rounded border border-zinc-700 bg-white text-zinc-600 px-4 py-0;
-  }
-
-  input[type="file"] {
-    @apply block w-full max-w-lg leading-6 rounded border border-zinc-700 bg-white text-zinc-600 p-2;
-  }
-
-  input[type="checkbox"] {
-    @apply inline-block w-6 h-6 rounded border border-zinc-700 bg-white text-zinc-600;
-  }
-
-  textarea {
-    @apply block w-full max-w-lg leading-8 rounded border border-zinc-700 bg-white text-zinc-600 px-4 py-2;
-  }
-
-  table {
-    @apply text-left border-separate border-spacing-0 w-full;
-  }
-
-  table tr th, table tr td {
-    @apply p-4 border-b border-r border-zinc-600;
-  }
-
-  table tr th:first-child, table tr td:first-child {
-    @apply border-l;
-  }
-
-  table thead tr th {
-    @apply bg-zinc-800 text-zinc-200 font-medium;
-  }
-
-  table thead tr:first-child th {
+  #diff table tbody tr:first-child td,
+  .diff table tbody tr:first-child td {
     @apply border-t;
   }
 
-  table thead tr:first-child th:first-child {
-    @apply rounded-tl-md;
+  #diff table tbody tr:first-child td pre,
+  .diff table tbody tr:first-child td pre {
+    @apply text-sm text-zinc-500 font-medium font-sans;
   }
 
-  table thead tr:first-child th:last-child {
-    @apply rounded-tr-md;
+  #diff table tbody tr:first-child td pre > span span:last-child,
+  .diff table tbody tr:first-child td pre > span span:last-child {
+    @apply font-normal text-zinc-400 font-mono;
   }
 
-  table tbody, table tfoot {
+  #diff table tbody tr:first-child td:first-child,
+  .diff table tbody tr:first-child td:first-child {
+    @apply border-l rounded-tl-lg;
+  }
+
+  #diff table tbody tr:first-child td:last-child,
+  .diff table tbody tr:first-child td:last-child {
+    @apply rounded-tr-lg;
+  }
+
+  #diff table tbody tr:not(:first-child) td,
+  .diff table tbody tr:not(:first-child) td {
+    @apply py-2;
+  }
+
+  #diff table tbody tr:not(:first-child) td pre,
+  .diff table tbody tr:not(:first-child) td pre {
+    @apply text-zinc-700;
+  }
+
+  #diff table tbody tr:not(:first-child) td:first-child,
+  .diff table tbody tr:not(:first-child) td:first-child {
+    @apply border-l border-zinc-100;
+  }
+
+  #diff table tbody tr:not(:first-child) td:nth-child(3),
+  #diff table tbody tr:not(:first-child) td:last-child,
+  .diff table tbody tr:not(:first-child) td:nth-child(3),
+  .diff table tbody tr:not(:first-child) td:last-child {
+    @apply border-r border-zinc-100;
+  }
+
+  #diff table tbody tr:not(:first-child) td:first-child pre,
+  #diff table tbody tr:not(:first-child) td:nth-child(4) pre,
+  .diff table tbody tr:not(:first-child) td:first-child pre,
+  .diff table tbody tr:not(:first-child) td:nth-child(4) pre {
+    @apply text-xs;
+  }
+
+  #diff table tbody tr:not(:first-child) td:nth-child(2) pre,
+  #diff table tbody tr:not(:first-child) td:nth-child(5) pre,
+  .diff table tbody tr:not(:first-child) td:nth-child(2) pre,
+  .diff table tbody tr:not(:first-child) td:nth-child(5) pre {
+    @apply text-xs opacity-50;
+  }
+
+  #diff table tbody tr:last-child td,
+  .diff table tbody tr:last-child td {
+    @apply border-b;
+  }
+
+  #diff table tbody tr:last-child td:first-child,
+  .diff table tbody tr:last-child td:first-child {
+    @apply rounded-bl-lg;
+  }
+
+  #diff table tbody tr:last-child td:last-child,
+  .diff table tbody tr:last-child td:last-child {
+    @apply rounded-br-lg;
+  }
+
+  #diff-code #diff table tbody tr:first-child td:first-child,
+  #diff-code #diff table tbody tr:not(:first-child) td:first-child,
+  #diff-code #diff table tbody tr:not(:first-child) td:nth-child(2),
+  #diff-code #diff table tbody tr:not(:first-child) td:nth-child(3),
+  .diff-code .diff table tbody tr:first-child td:first-child,
+  .diff-code .diff table tbody tr:not(:first-child) td:first-child,
+  .diff-code .diff table tbody tr:not(:first-child) td:nth-child(2),
+  .diff-code .diff table tbody tr:not(:first-child) td:nth-child(3){
     @apply hidden;
   }
 
-  table tbody:not(empty) {
-    @apply table-row-group;
+  #diff-code #diff table tbody tr:first-child td:last-child,
+  .diff-code .diff table tbody tr:first-child td:last-child {
+    @apply rounded-t-lg border-l;
   }
 
-  table tbody tr:last-child td:first-child {
-    @apply rounded-bl-md;
+  #diff-code #diff table tbody tr:not(:first-child) td:nth-child(4),
+  .diff-code .diff table tbody tr:not(:first-child) td:nth-child(4) {
+    @apply w-[50px] bg-[#f7f7f7] border-l border-zinc-100;
   }
 
-  table tbody tr:last-child td:last-child {
-    @apply rounded-br-md;
+  #diff-code #diff table tbody tr:not(:first-child) td:nth-child(6),
+  .diff-code .diff table tbody tr:not(:first-child) td:nth-child(6) {
+    @apply w-full;
   }
 
-  table tbody:empty + tfoot {
-    @apply table-footer-group;
+  #diff-code #diff table tbody tr:last-child td:nth-child(4),
+  .diff-code .diff table tbody tr:last-child td:nth-child(4) {
+    @apply rounded-bl-lg;
   }
 
-  table tfoot tr:last-child td:first-child {
-    @apply rounded-bl-md;
+  table.table {
+    @apply border-separate border-spacing-0 rounded-lg shadow-sm;
   }
 
-  table tfoot tr:last-child td:last-child {
-    @apply rounded-br-md;
+  table.table thead tr th {
+    @apply bg-[#fafbfc] text-zinc-500 font-medium font-sans text-sm p-[10px] text-left whitespace-nowrap text-ellipsis overflow-hidden border-r border-b border-zinc-100;
+  }
+
+  table.table thead tr:first-child th {
+    @apply border-t;
+  }
+
+  table.table thead tr:first-child th:first-child {
+    @apply border-l rounded-tl-lg;
+  }
+
+  table.table thead tr:first-child th:last-child {
+    @apply border-l rounded-tr-lg;
+  }
+
+  table.table tbody tr td {
+    @apply whitespace-nowrap text-ellipsis overflow-hidden bg-white py-2 px-[10px] border-r border-b border-zinc-100;
+  }
+
+  table.table tbody tr td:first-child {
+    @apply border-l;
+  }
+
+  table.table tbody tr td:last-child {
+    @apply border-r;
+  }
+
+  table.table tbody tr:last-child td:first-child {
+    @apply rounded-bl-lg;
+  }
+
+  table.table tbody tr:last-child td:last-child {
+    @apply rounded-br-lg;
   }
 }

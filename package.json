@@ -16,6 +16,5 @@
     "eslint-config-custom": "workspace:*",
     "prettier": "^2.5.1",
     "turbo": "latest"
-  },
-  "name": "turbo-serverless-rest-vitejs-vercel"
+  }
 }
