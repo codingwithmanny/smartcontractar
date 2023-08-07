@@ -10,6 +10,7 @@ import Contract from '../../pages/Contract';
 import ContractTransactions from '../../pages/ContractTransactions';
 import ContractState from '../../pages/ContractState';
 import ContractCode from '../../pages/ContractCode';
+import ContractNotifications from '../../pages/ContractNotifications';
 
 // Config
 // ========================================================
@@ -21,7 +22,7 @@ const router = createBrowserRouter(
         <Route index element={<ContractTransactions />} />
         <Route path="state" element={<ContractState />} />
         <Route path="code" element={<ContractCode />} />
-        <Route path="notifications" element={<p>Contract Notifications</p>} />
+        <Route path="notifications" element={<ContractNotifications />} />
       </Route>
     </Route>
   )

@@ -10,11 +10,12 @@ import {
   IconArrowRight,
   IconChevronDown,
   IconChevronUp,
+  IconRefresh
 } from "@tabler/icons-react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Prism from "prismjs";
-// import "prismjs/components/prism-json";
+import "prismjs/components/prism-json";
 import ReactDiffViewer from "react-diff-viewer";
 
 // Main Render
@@ -89,6 +90,19 @@ const ContractTransactions = () => {
     <>
       <main>
         <div className="px-8 pt-8 pb-24">
+          <header className="flex justify-between items-center mb-8">
+            <h2 className=" font-semibold">Transactions</h2>
+            <button
+            type="button"
+            className="group bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
+          >
+            <IconRefresh
+              size={16}
+              className="text-zinc-300 mr-2 transform group-hover:rotate-12 transition-all ease-in-out duration-200"
+            />
+            Refresh Data
+          </button>
+          </header>
           <div className="w-full overflow-scroll">
             <table className="table w-full mb-6">
               <thead>
@@ -448,38 +462,38 @@ const ContractTransactions = () => {
                               >
                                 <div className="diff-code">
                                   <div className="diff">
-                                <ReactDiffViewer
-                                leftTitle={"Previous State"}
-                                rightTitle={"Error"}
-                                splitView={true}
-                                oldValue={""}
-                                newValue={modalData?.error}
-                                styles={{
-                                  diffAdded: {
-                                    background: "none",
-                                  },
-                                  marker: {
-                                    opacity: 0,
-                                  },
-                                }}
-                                renderContent={(str: string) => {
-                                  if (!str) return <></>;
-                                  return (
-                                    <span
-                                      style={{ display: "inline" }}
-                                      dangerouslySetInnerHTML={{
-                                        __html: Prism.highlight(
-                                          str,
-                                          Prism.languages.json,
-                                          "json"
-                                        ),
+                                    <ReactDiffViewer
+                                      leftTitle={"Previous State"}
+                                      rightTitle={"Error"}
+                                      splitView={true}
+                                      oldValue={""}
+                                      newValue={modalData?.error}
+                                      styles={{
+                                        diffAdded: {
+                                          background: "none",
+                                        },
+                                        marker: {
+                                          opacity: 0,
+                                        },
+                                      }}
+                                      renderContent={(str: string) => {
+                                        if (!str) return <></>;
+                                        return (
+                                          <span
+                                            style={{ display: "inline" }}
+                                            dangerouslySetInnerHTML={{
+                                              __html: Prism.highlight(
+                                                str,
+                                                Prism.languages.json,
+                                                "json"
+                                              ),
+                                            }}
+                                          />
+                                        );
                                       }}
                                     />
-                                  );
-                                }}
-                              />
-                              </div>
-                              </div>
+                                  </div>
+                                </div>
                               </div>
                             ) : null}
                           </section>

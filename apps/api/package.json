@@ -10,7 +10,8 @@
     "lint": "next lint",
     "db:up": "docker compose -p turbo up -d",
     "db:down": "docker compose -p turbo down --remove-orphans -v",
-    "db:migrate": "pnpm with-env tsx src/db/migrate.ts"
+    "db:migrate": "pnpm with-env tsx src/db/migrate.ts",
+    "email:test": "pnpm with-env tsx src/email/send.ts"
   },
   "dependencies": {
     "@types/node": "20.4.5",
@@ -24,6 +25,7 @@
     "eslint-config-next": "13.4.12",
     "kysely": "^0.26.1",
     "next": "13.4.12",
+    "nodemailer": "^6.9.4",
     "pg": "^8.11.2",
     "postcss": "8.4.27",
     "react": "18.2.0",
@@ -31,5 +33,8 @@
     "tailwindcss": "3.3.3",
     "tsx": "^3.12.7",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.9"
   }
 }

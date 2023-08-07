@@ -3,19 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { IconSearch, IconRefresh } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-// import Prism from "prismjs";
-// import 'prismjs/components/prism-json';
-// import { unified } from 'unified';
-// import rehypeParse from 'rehype-parse';
-// // import rehypeReact from 'rehype-react';
-// import remarkParse from 'remark-parse';
-// import remarkGfm from 'remark-gfm';
-// import remarkRehype from 'remark-rehype';
-// import rehypeStringify from 'rehype-stringify';
-// // import rehypePrettyCode from 'rehype-pretty-code';
-// import remarkHighlightjs from 'remark-highlight.js'
 import { Outlet } from 'react-router-dom';
 
 // Main Render
@@ -162,16 +151,6 @@ const ContractPage = () => {
               {contractRead.data?.data?.network}
             </span>
           </h1>
-          <button
-            type="button"
-            className="group bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
-          >
-            <IconRefresh
-              size={16}
-              className="text-zinc-300 mr-2 transform group-hover:rotate-12 transition-all ease-in-out duration-200"
-            />
-            Refresh Data
-          </button>
         </div>
         <h2 className="text-lg text-zinc-500 mb-4">{contractId}</h2>
         <div className="bg-zinc-100 inline-flex text-zinc-500 text-sm shadow-sm leading-7 px-3 rounded-lg border border-zinc-200">

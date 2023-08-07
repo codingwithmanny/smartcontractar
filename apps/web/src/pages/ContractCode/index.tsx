@@ -95,40 +95,43 @@ const ContractCode = () => {
   return (
     <main>
       <div className="px-8 pt-8 pb-24">
+        <header className="flex justify-between mb-8">
+          <h2 className=" font-semibold">Contract Source Code</h2>
+        </header>
         <div id="diff-code">
-        <div id="diff">
-          <ReactDiffViewer
-            leftTitle={"Initial State"}
-            rightTitle={"Contract Code"}
-            splitView={true}
-            oldValue={""}
-            styles={{
-              diffAdded: {
-                background: "none",
-              },
-              marker: {
-                opacity: 0,
-              },
-            }}
-            newValue={contractRead.data?.data?.sourceCode}
-            renderContent={(str: string) => {
-              if (!str) return <></>;
-              return (
-                <span
-                  style={{ display: "inline" }}
-                  dangerouslySetInnerHTML={{
-                    __html: Prism.highlight(
-                      str,
-                      Prism.languages.javascript,
-                      "javascript"
-                    ),
-                  }}
-                />
-              );
-            }}
-          />
+          <div id="diff">
+            <ReactDiffViewer
+              leftTitle={"Initial State"}
+              rightTitle={"Contract Code"}
+              splitView={true}
+              oldValue={""}
+              styles={{
+                diffAdded: {
+                  background: "none",
+                },
+                marker: {
+                  opacity: 0,
+                },
+              }}
+              newValue={contractRead.data?.data?.sourceCode}
+              renderContent={(str: string) => {
+                if (!str) return <></>;
+                return (
+                  <span
+                    style={{ display: "inline" }}
+                    dangerouslySetInnerHTML={{
+                      __html: Prism.highlight(
+                        str,
+                        Prism.languages.javascript,
+                        "javascript"
+                      ),
+                    }}
+                  />
+                );
+              }}
+            />
+          </div>
         </div>
-      </div>
       </div>
     </main>
   );

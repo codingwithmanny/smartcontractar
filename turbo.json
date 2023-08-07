@@ -5,6 +5,7 @@
     "db:up": {},
     "db:down": {},
     "db:migrate": {},
+    "email:test": {},
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
@@ -17,6 +18,8 @@
   },
   "globalEnv": [
     "DATABASE_URL",
-    "VITE_API_URL"
+    "VITE_API_URL",
+    "EMAIL_SERVER",
+    "EMAIL_FROM"
   ]
 }

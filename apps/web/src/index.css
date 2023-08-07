@@ -164,4 +164,8 @@
   table.table tbody tr:last-child td:last-child {
     @apply rounded-br-lg;
   }
+
+  select {
+    @apply appearance-none bg-white border border-zinc-100 rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-zinc-100;
+  }
 }
