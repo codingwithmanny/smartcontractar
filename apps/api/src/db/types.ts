@@ -31,6 +31,7 @@ interface Contracts {
   sourceCode: string;
   totalTxs?: number;
   data: string;
+  updatedAt?: ColumnType<Date, string | undefined, never>
   createdAt: ColumnType<Date, string | undefined, never>
 }
 
@@ -49,6 +50,26 @@ interface Transactions {
   createdAt: ColumnType<Date, string | undefined, never>
 }
 
+interface Notifications {
+  id: Generated<UUID>;
+  contractId: string;
+  jobId?: string;
+  status: string;
+  object: string;
+  operator: string;
+  value: string;
+  valueType: string;
+  email: string;
+  cron: string;
+  expirationType: string;
+  expirationValue: string;
+  retries: number;
+  failedAttempts?: number;
+  lastCheckedAt?: ColumnType<Date, string | undefined, never>
+  successfulAttempts?: number;
+  createdAt: ColumnType<Date, string | undefined, never>
+}
+
 // Types
 // ========================================================
 export interface Database {
@@ -56,4 +77,5 @@ export interface Database {
   todos: Todos;
   contracts: Contracts;
   transactions: Transactions;
+  notifications: Notifications;
 }

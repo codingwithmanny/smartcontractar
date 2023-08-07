@@ -35,6 +35,7 @@ export const GET = async (
         "initState",
         "totalTxs",
         "data",
+        "updatedAt",
         "createdAt",
       ])
       .where("contractId", "=", contractId)
@@ -73,6 +74,7 @@ export const GET = async (
           "initState",
           "totalTxs",
           "data",
+          "updatedAt",
           "createdAt",
         ])
         .executeTakeFirstOrThrow();

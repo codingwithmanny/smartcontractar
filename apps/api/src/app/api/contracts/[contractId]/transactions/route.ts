@@ -53,12 +53,25 @@ export const GET = async (
   // Find
   if (search) {
     queryTransactions = queryTransactions.where(
-      "before",
+      "transactionId",
+      "ilike",
+      `%${search}%`
+    );
+    queryTransactions = queryTransactions.where(
+      "blockId",
+      "ilike",
+      `%${search}%`
+    );
+    queryTransactions = queryTransactions.where(
+      "ownerAddress",
       "ilike",
       `%${search}%`
     );
   }
   queryTransactions = queryTransactions.where("contractId", "=", contract.id);
+
+  // Total Count
+  const queryTransactionsTotal = queryTransactions.select((eb) => eb.fn.count('id').as('total'));
 
   // Limit
   queryTransactions = queryTransactions.limit(limit);
@@ -76,6 +89,14 @@ export const GET = async (
   return NextResponse.json(
     {
       data: await queryTransactions.selectAll().execute(),
+      pagination: {
+        search,
+        limit,
+        offset,
+        order,
+        sort,
+        total: (await queryTransactionsTotal.executeTakeFirstOrThrow()).total,
+      }
     },
     {
       status: 200,

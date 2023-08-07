@@ -29,12 +29,18 @@ export const GET = async (
       .select(["id", "contractId", "ownerAddress", "createdAt"])
       .where("contractId", "=", contractId)
       .execute();
-
+    
     if (existingContract.length > 0) {
       response = existingContract[0];
 
       const transactionResponse = await fetch(
-        `${WARP_GATEWAY}/v2/interactions-sort-key?contractId=${contractId}`
+        `${WARP_GATEWAY}/v2/interactions-sort-key?contractId=${contractId}`,
+        {
+          cache: "no-cache",
+          headers: {
+            'cache-control': 'no-cache'
+          }
+        }
       );
 
       const transactionResponseJson = await transactionResponse.json();
@@ -62,7 +68,6 @@ export const GET = async (
 
       let completed = 0;
       for (let i = 0; i < txSorted.length; i++) {
-        console.log({i });
         const data = {
           contractId: existingContract[0].id,
           transactionId: txSorted[i].interaction.id,
@@ -84,11 +89,16 @@ export const GET = async (
           .onConflict((oc) => oc.column("transactionId").doNothing())
           .returning(["id", "contractId", "transactionId", "createdAt"])
           .execute();
-        console.log("after");
         completed++;
       }
 
       response = { completed };
+
+      await db.updateTable("contracts").set({
+        updatedAt: new Date() as any,
+      }).where("id", "=", existingContract[0].id).execute();
+
+      fetch(`${process.env.API_SERVICE_URL}/contracts/${contractId}/jobs`);
     }
 
     // Success
