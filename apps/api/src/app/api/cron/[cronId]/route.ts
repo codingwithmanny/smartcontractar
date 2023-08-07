@@ -14,7 +14,6 @@ import { Client } from "@upstash/qstash";
 const client = new Client({
   token: `${process.env.QSTASH_TOKEN}`,
 });
-const WARP_GATEWAY = "https://gateway.warp.cc/gateway";
 
 // Functions
 // ========================================================
@@ -76,7 +75,7 @@ export const POST = async (
     const attempts =
       typeof queryReadCron.failedAttempts === "number"
         ? queryReadCron.failedAttempts
-        : parseInt(queryReadCron.successfulAttempts as unknown as string, 0);
+        : parseInt(queryReadCron.failedAttempts as unknown as string, 0);
 
     // 0 - Check if already completed
     if (queryReadCron.status === "COMPLETED" || attempts >= expirationValue) {
