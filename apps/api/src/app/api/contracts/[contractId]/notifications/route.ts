@@ -197,23 +197,23 @@ export const POST = async (
       ])
       .executeTakeFirstOrThrow();
 
-    // // const publisJSONOptions: PublishJsonRequest = {
-    // //   url: `${process.env.API_SERVICE_URL}/cron/${queryCreateNotification.id}`,
-    // //   body: {},
-    // //   headers: {},
-    // //   cron: '*/2 * * * *' // Every 2 minutes
-    // // };
+    const publisJSONOptions: PublishJsonRequest = {
+      url: `${process.env.API_SERVICE_URL}/cron/${queryCreateNotification.id}`,
+      body: {},
+      headers: {},
+      cron: '*/2 * * * *' // Every 2 minutes
+    };
 
-    // // @TODO: Add cron validation
-    // // const cronRegex = /^((\*|[0-5]?\d)(,\s*|\s+)){4}(\*|[0-6]?\d)$/;
-    // //   if (!cronRegex.test(input.duration)) throw new Error('Invalid cron expression');
-    // //   publisJSONOptions.cron = input.duration;
+    // @TODO: Add cron validation
+    // const cronRegex = /^((\*|[0-5]?\d)(,\s*|\s+)){4}(\*|[0-6]?\d)$/;
+    //   if (!cronRegex.test(input.duration)) throw new Error('Invalid cron expression');
+    //   publisJSONOptions.cron = input.duration;
 
-    // const res = await client.publishJSON(publisJSONOptions) as { messageId?: string, scheduleId?: string };
-    // const messageId = res?.messageId ?? res.scheduleId;
-    // await db.updateTable("notifications").set({ jobId: messageId }).where("id", "=", queryCreateNotification.id).execute();
-    // // Create CRON Job with qStash
-    // // @TODO add ability for local cronjob service
+    const res = await client.publishJSON(publisJSONOptions) as { messageId?: string, scheduleId?: string };
+    const messageId = res?.messageId ?? res.scheduleId;
+    await db.updateTable("notifications").set({ jobId: messageId }).where("id", "=", queryCreateNotification.id).execute();
+    // Create CRON Job with qStash
+    // @TODO add ability for local cronjob service
 
     // Success
     return NextResponse.json(
