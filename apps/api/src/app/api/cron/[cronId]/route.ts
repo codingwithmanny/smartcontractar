@@ -137,18 +137,32 @@ export const POST = async (
 
     // 2 - Send email
     if (result) {
+      const contract = await db
+        .selectFrom("contracts")
+        .select(["id", "contractId"])
+        .where(
+          "id",
+          "=",
+          queryReadCron.contractId as OperandValueExpressionOrList<
+            Database,
+            "contracts",
+            "id"
+          >
+        )
+        .execute();
+
       await mailer.sendMail({
         from: `${process.env.EMAIL_FROM}`,
         to: `${queryReadCron.email}`,
-        subject: `SmartContractAR Notifcation - Contract: ${queryReadCron.contractId}`,
+        subject: `SmartContractAR Notifcation - Contract: ${contract?.[0]?.id}`,
         html: `<div>
             <h1>SmartContractAR Notification</h1>
             <p>Notification ID: ${queryReadCron.id}</p>
-            <p>Contract ID: ${queryReadCron.contractId}</p>
+            <p>Contract ID: ${contract?.[0]?.id}</p>
             <p><a href="${process.env.DOMAIN_URL}/contract/${
-          queryReadCron.contractId
+          contract?.[0]?.id
         }/notifications" target="_blank">${process.env.DOMAIN_URL}/contract/${
-          queryReadCron.contractId
+          contract?.[0]?.id
         }/notifications</a></p>
             <pre><code>${queryReadCron.object} ${
           queryReadCron.operator
