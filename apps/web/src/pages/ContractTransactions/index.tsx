@@ -200,8 +200,8 @@ const ContractTransactions = () => {
               </span>
               <span
                 title={new Date(
-                  contractRead.data?.data?.updatedAt
-                ).toISOString()}
+                  contractRead.data?.data?.updatedAt ?? 0
+                )?.toISOString()}
                 className="block leading-6 pl-2"
               >
                 {new Date(
