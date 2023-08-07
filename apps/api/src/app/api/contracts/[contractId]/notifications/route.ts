@@ -18,8 +18,8 @@ const client = new Client({
 // ========================================================
 /**
  * Cors options
- * @param request 
- * @returns 
+ * @param request
+ * @returns
  */
 export const OPTIONS = async (request: NextRequest) => {
   return cors(
@@ -35,16 +35,17 @@ export const OPTIONS = async (request: NextRequest) => {
  * @param request
  * @returns
  */
-export const GET = async (request: NextRequest,
-    { params }: { params: { contractId: string } }
-  ) => {
-    const { contractId } = params;
+export const GET = async (
+  request: NextRequest,
+  { params }: { params: { contractId: string } }
+) => {
+  const { contractId } = params;
 
-    const contract = await db
-        .selectFrom("contracts")
-        .select(["id", "contractId"])
-        .where("contractId", "=", contractId)
-        .executeTakeFirstOrThrow();
+  const contract = await db
+    .selectFrom("contracts")
+    .select(["id", "contractId"])
+    .where("contractId", "=", contractId)
+    .executeTakeFirstOrThrow();
 
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get("limit") as string, 0) || 10;
@@ -95,10 +96,18 @@ export const GET = async (request: NextRequest,
     sort as OrderByDirectionExpression
   );
 
+  // Temporary obfuscation
+  const results = (await queryNotifications.selectAll().execute()).map(
+    (row) => ({
+      ...row,
+      email: `${row.email.slice(0, 3)}${"*".repeat(row.email.length - 3)}`,
+    })
+  );
+
   // Return
   return NextResponse.json(
     {
-      data: await queryNotifications.selectAll().execute(),
+      data: await results,
     },
     {
       status: 200,
@@ -111,7 +120,8 @@ export const GET = async (request: NextRequest,
  * @param request
  * @returns
  */
-export const POST = async (request: NextRequest,
+export const POST = async (
+  request: NextRequest,
   { params }: { params: { contractId: string } }
 ) => {
   const { contractId } = params;
@@ -133,10 +143,10 @@ export const POST = async (request: NextRequest,
   const payload = await request.json();
 
   const contract = await db
-  .selectFrom("contracts")
-  .select(["id", "contractId"])
-  .where("contractId", "=", contractId)
-  .executeTakeFirstOrThrow();
+    .selectFrom("contracts")
+    .select(["id", "contractId"])
+    .where("contractId", "=", contractId)
+    .executeTakeFirstOrThrow();
 
   // Validation
   // @TODO validate contractId
@@ -156,10 +166,10 @@ export const POST = async (request: NextRequest,
   try {
     const queryCreateNotification = await db
       .insertInto("notifications")
-      .values({ 
+      .values({
         ...payload,
         value: payload?.value ?? "",
-        status: "PENDING", 
+        status: "PENDING",
         contractId: contract.id,
         cron: "* * * * *",
         expirationType: "intervals",
@@ -187,23 +197,23 @@ export const POST = async (request: NextRequest,
       ])
       .executeTakeFirstOrThrow();
 
-      const publisJSONOptions: PublishJsonRequest = {
-        url: `${process.env.API_SERVICE_URL}/cron/${queryCreateNotification.id}`,
-        body: {},
-        headers: {},
-        cron: '*/2 * * * *' // Every 2 minutes
-      };
+    // // const publisJSONOptions: PublishJsonRequest = {
+    // //   url: `${process.env.API_SERVICE_URL}/cron/${queryCreateNotification.id}`,
+    // //   body: {},
+    // //   headers: {},
+    // //   cron: '*/2 * * * *' // Every 2 minutes
+    // // };
 
-      // @TODO: Add cron validation
-      // const cronRegex = /^((\*|[0-5]?\d)(,\s*|\s+)){4}(\*|[0-6]?\d)$/;
-      //   if (!cronRegex.test(input.duration)) throw new Error('Invalid cron expression');
-      //   publisJSONOptions.cron = input.duration;
+    // // @TODO: Add cron validation
+    // // const cronRegex = /^((\*|[0-5]?\d)(,\s*|\s+)){4}(\*|[0-6]?\d)$/;
+    // //   if (!cronRegex.test(input.duration)) throw new Error('Invalid cron expression');
+    // //   publisJSONOptions.cron = input.duration;
 
-      const res = await client.publishJSON(publisJSONOptions) as { messageId?: string, scheduleId?: string };
-      const messageId = res?.messageId ?? res.scheduleId;
-      await db.updateTable("notifications").set({ jobId: messageId }).where("id", "=", queryCreateNotification.id).execute();
-      // Create CRON Job with qStash
-      // @TODO add ability for local cronjob service
+    // const res = await client.publishJSON(publisJSONOptions) as { messageId?: string, scheduleId?: string };
+    // const messageId = res?.messageId ?? res.scheduleId;
+    // await db.updateTable("notifications").set({ jobId: messageId }).where("id", "=", queryCreateNotification.id).execute();
+    // // Create CRON Job with qStash
+    // // @TODO add ability for local cronjob service
 
     // Success
     return NextResponse.json(

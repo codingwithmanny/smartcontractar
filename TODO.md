@@ -9,6 +9,7 @@ Must have:
 - [x] Transactions - Refresh Data
 - [x] API Cron - Refresh Data
 - [x] Contract - Not Found
+- [x] Add delete notification
 - [ ] Add README
 
 Nice to have:

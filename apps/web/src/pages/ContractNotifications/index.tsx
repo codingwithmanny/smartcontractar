@@ -100,12 +100,37 @@ const ContractNotifications = () => {
   /**
    *
    */
+  const notificationsDelete = useMutation(
+    async (id: string) => {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/notifications/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network error.");
+      }
+      const json = await response.json();
+      return json;
+    },
+    {
+      onSuccess: () => {
+        notificationsList.refetch();
+      },
+    }
+  );
+
+  /**
+   *
+   */
   const isLoading = notificationsList.isLoading || transactionsList.isLoading;
 
   /**
    *
    */
-  const isMutationLoading = notificationsCreate.isLoading;
+  const isMutationLoading =
+    notificationsCreate.isLoading || notificationsDelete.isLoading;
 
   // Hooks
   useEffect(() => {
@@ -139,6 +164,7 @@ const ContractNotifications = () => {
         <div className="px-8 pt-8 pb-24">
           <header className="flex justify-between items-center mb-8">
             <h2 className=" font-semibold">All Notifications</h2>
+
             <button
               onClick={() => {
                 setModal("create");
@@ -168,6 +194,12 @@ const ContractNotifications = () => {
             </button>
           </header>
 
+          <div className="bg-amber-100 border border-amber-300 text-amber-700 rounded-lg p-4 mb-8">
+            <span className="text-amber-800 font-semibold mr-1">NOTE!</span>
+            Make sure to delete the notification when done. All emails are still
+            stored in the database until deleted.
+          </div>
+
           <div className="w-full overflow-scroll">
             <table className="table w-full mb-6">
               <thead>
@@ -179,7 +211,7 @@ const ContractNotifications = () => {
                   <th>Successful Attempts</th>
                   <th>Failed Attempts</th>
                   <th>Created</th>
-                  {/* <th>Details</th> */}
+                  <th>Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -227,7 +259,7 @@ const ContractNotifications = () => {
                     </td>
                     <td>
                       <span className="inline-block bg-zinc-100 font-mono text-sm text-zinc-500 py-[2px] px-1 rounded-lg border border-zinc-200">
-                        {notification.lastCheckedAt}
+                        {notification.lastCheckedAt ? notification.lastCheckedAt : "Never"}
                       </span>
                     </td>
                     <td>
@@ -245,17 +277,17 @@ const ContractNotifications = () => {
                         {notification.createdAt}
                       </span>
                     </td>
-                    {/* <td>
+                    <td>
                       <button
                         onClick={() => {
-                          
+                          notificationsDelete.mutate(notification.id);
                         }}
                         type="button"
                         className="group w-full inline-flex justify-center bg-white hover:bg-zinc-50 items-center border border-zinc-100 leading-8 px-3 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
                       >
-                        View Details
+                        Delete
                       </button>
-                    </td> */}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -335,8 +367,11 @@ const ContractNotifications = () => {
                           track.
                         </p>
                         <div className="bg-amber-100 border border-amber-300 text-amber-700 rounded-lg p-4">
-                        <span className="text-amber-800 font-semibold mr-1">NOTE!</span>
-                        API requests are limitted to 10 requests before the cron stops.
+                          <span className="text-amber-800 font-semibold mr-1">
+                            NOTE!
+                          </span>
+                          API requests are limitted to 10 requests before the
+                          cron stops.
                         </div>
                       </div>
 
