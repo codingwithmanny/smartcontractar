@@ -17,6 +17,7 @@
     }
   },
   "globalEnv": [
+    "NODE_ENV",
     "DATABASE_URL",
     "VITE_API_URL",
     "EMAIL_SERVER",
