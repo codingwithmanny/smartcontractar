@@ -1,6 +1,6 @@
 // Imports
 // ========================================================
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, Fragment } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -10,7 +10,7 @@ import {
   IconArrowRight,
   IconChevronDown,
   IconChevronUp,
-  IconRefresh
+  IconRefresh,
 } from "@tabler/icons-react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -39,6 +39,23 @@ const ContractTransactions = () => {
   /**
    *
    */
+  const contractRead = useQuery({
+    queryKey: ["contract", contractId],
+    queryFn: async () => {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/contracts/${contractId}`
+      );
+      if (!response.ok) {
+        throw new Error("Not found.");
+      }
+      const json = await response.json();
+      return json;
+    },
+  });
+
+  /**
+   *
+   */
   const transactionsList = useQuery({
     queryKey: ["transactions"],
     queryFn: async () => {
@@ -58,9 +75,93 @@ const ContractTransactions = () => {
   /**
    *
    */
-  const isLoading = transactionsList?.isLoading;
+  const transactionsPull = useMutation(async () => {
+    const response = await fetch(
+      `${
+        import.meta.env.VITE_API_URL
+      }/contracts/${contractId}/transactions/pull`
+    );
+    if (!response.ok) {
+      throw new Error("Network error.");
+    }
+    const json = await response.json();
+    return json;
+  }, {
+    onSuccess: () => {
+      contractRead.refetch();
+      transactionsList.refetch();
+      transactionsStateParse.mutate();
+    }
+  });
+
+  /**
+   * 
+   */
+  const transactionsStateParse = useMutation(async () => {
+    const response = await fetch(
+      `${
+        import.meta.env.VITE_API_URL
+      }/contracts/${contractId}/jobs`
+    );
+    if (!response.ok) {
+      throw new Error("Network error.");
+    }
+    const json = await response.json();
+    return json;
+  }, {
+    onSuccess: (data) => {
+      transactionsList.refetch();
+      if (data?.data?.jobs !== undefined && data?.data?.jobs > 0) {
+        setTimeout(() => {
+          transactionsStateParse.mutate();
+        }, 1000);
+      }
+    }
+  });
+
+  /**
+   *
+   */
+  const isLoading = contractRead?.isLoading || transactionsList?.isLoading;
+
+  /**
+   * 
+   */
+  const isMutationLoading = transactionsPull.isLoading || transactionsStateParse.isLoading;
 
   // Hooks
+  /**
+   * If no transaction data pull all transactions
+   */
+  useEffect(() => {
+    if (isLoading || !contractRead.data?.data || !transactionsList.data?.data)
+      return;
+
+    // If no transaction data pull all transactions
+    if (
+      contractRead.data?.data.totalTxs === null &&
+      transactionsList.data?.data.length === 0
+    ) {
+      transactionsPull.mutate();
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
+  /**
+   * If no history pull data
+   */
+  useEffect(() => {
+    if (isLoading || !contractRead.data?.data || !transactionsList.data?.data)
+      return;
+
+      transactionsStateParse.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
+  /**
+   * Initial Load
+   */
   useEffect(() => {
     if (isLoading) return;
     setIsInitLoading(false);
@@ -90,119 +191,197 @@ const ContractTransactions = () => {
     <>
       <main>
         <div className="px-8 pt-8 pb-24">
-          <header className="flex justify-between items-center mb-8">
+          <header className="flex justify-between items-center mb-4">
             <h2 className=" font-semibold">Transactions</h2>
+            <div className="flex items-center">
+              <span className="text-sm text-zinc-400 flex mr-4">
+            <span className="block leading-6 border-zinc-200">
+                Last Updated
+              </span>
+              <span
+                title={new Date(
+                  contractRead.data?.data?.updatedAt
+                ).toISOString()}
+                className="block leading-6 pl-2"
+              >
+                {new Date(
+                  contractRead.data?.data?.updatedAt
+                ).toLocaleDateString()}{" "}
+                {new Date(
+                  contractRead.data?.data?.updatedAt
+                ).toLocaleTimeString()}
+              </span>
+              </span>
             <button
-            type="button"
-            className="group bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
-          >
-            <IconRefresh
-              size={16}
-              className="text-zinc-300 mr-2 transform group-hover:rotate-12 transition-all ease-in-out duration-200"
-            />
-            Refresh Data
-          </button>
+            disabled={isMutationLoading}
+              type="button"
+              className="group disabled:opacity-50 disabled:bg-zinc-100 bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
+              onClick={() => {
+                transactionsPull.mutate();
+              }}
+            >
+              <IconRefresh
+                size={16}
+                className={`text-zinc-300 mr-2 group-hover:rotate-12 transition-all ease-in-out duration-200 ${isMutationLoading ? "animate-spin" : "transform"}`}
+              />
+              Update Latest Data
+            </button>
+            </div>
           </header>
-          <div className="w-full overflow-scroll">
-            <table className="table w-full mb-6">
-              <thead>
-                <tr>
-                  <th className="max-w-[160px]">Transaction ID</th>
-                  <th className="max-w-[160px]">Block ID</th>
-                  <th className="max-w-[160px]">Owner Address</th>
-                  <th>Block Height</th>
-                  <th>Timestamp</th>
-                  <th>Details / History</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactionsList.data?.data?.map(
-                  (transaction: any, key: number) => (
-                    <tr key={`tx-${transaction.transactionId}`}>
-                      <td>
-                        <span
-                          title={transaction.transactionId}
-                          className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
-                        >
-                          {transaction.transactionId}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          title={transaction.blockId}
-                          className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
-                        >
-                          {transaction.blockId}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          title={transaction.ownerAddress}
-                          className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
-                        >
-                          {transaction.ownerAddress}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="inline-block bg-zinc-100 font-mono text-sm text-zinc-500 py-[2px] px-1 rounded-lg border border-zinc-200">
-                          {transaction.blockHeight}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="inline-block bg-zinc-100 font-mono text-sm text-zinc-500 py-[2px] px-1 rounded-lg border border-zinc-200">
-                          <time
-                            title={new Date(
-                              transaction.timestamp * 1000
-                            ).toLocaleString()}
-                            dateTime={transaction.timestamp}
-                          >
-                            {transaction.timestamp}
-                          </time>
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            setModalData(transaction);
-                            setModal(transaction.transactionId);
-                            setModalNav({
-                              prev: transactionsList.data?.data?.[key - 1]
-                                ? {
-                                    ...transactionsList.data?.data?.[key - 1],
-                                    index: key - 1,
-                                  }
-                                : undefined,
-                              next: transactionsList.data?.data?.[key + 1]
-                                ? {
-                                    ...transactionsList.data?.data?.[key + 1],
-                                    index: key + 1,
-                                  }
-                                : undefined,
-                            });
-                          }}
-                          type="button"
-                          className="group w-full inline-flex justify-center bg-white hover:bg-zinc-50 items-center border border-zinc-100 leading-8 px-3 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
-                        >
-                          <IconHistory
-                            size={16}
-                            className="mr-1 text-zinc-300"
-                          />
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
 
-          <button
-            type="button"
-            className="group w-full justify-center bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
-          >
-            Load More
-          </button>
+          {/* <div className="flex space-x-4 mb-8">
+            <span className="flex items-center bg-zinc-100 text-sm h-6 leading-6 px-2 py-0 rounded border border-zinc-200 text-zinc-500">
+              <span className="block leading-6 border-r border-zinc-200 pr-2">
+                Total
+              </span>
+              <span className="block leading-6 pl-2">
+                {contractRead.data?.data?.totalTxs}
+              </span>
+            </span>
+            <span className="flex items-center bg-zinc-100 text-sm h-6 leading-6 px-2 py-0 rounded border border-zinc-200 text-zinc-500">
+              <span className="block leading-6 border-r border-zinc-200 pr-2">
+                Retrieved
+              </span>
+              <span className="block leading-6 pl-2">
+                {transactionsList.data?.data.length}
+              </span>
+            </span>
+          </div> */}
+          
+          {contractRead.data?.data?.totalTxs !== null &&
+          transactionsList.data?.data?.length > 0 ? (
+            <>
+              <section className="w-full overflow-scroll">
+              <span className="block leading-6 text-sm text-zinc-400 mb-4">
+                SHOWING {transactionsList.data?.pagination?.offset === 0
+                  ? transactionsList.data?.pagination?.total === 0 ? 0 : 1 
+                  : transactionsList.data?.pagination?.offset * transactionsList.data?.pagination?.limit}&nbsp;-&nbsp;
+                  {transactionsList.data?.pagination?.offset * transactionsList.data?.pagination?.limit + transactionsList.data?.data?.length}&nbsp;OF&nbsp;
+                  {transactionsList.data?.pagination?.total}
+              </span>
+
+                <table className="table w-full mb-6">
+                  <thead>
+                    <tr>
+                      <th className="max-w-[160px]">Transaction ID</th>
+                      <th className="max-w-[160px]">Block ID</th>
+                      <th className="max-w-[160px]">Owner Address</th>
+                      <th>Block Height</th>
+                      <th>Timestamp</th>
+                      <th>Details / History</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactionsList.data?.data?.map(
+                      (transaction: any, key: number) => (
+                        <tr key={`tx-${transaction.transactionId}`}>
+                          <td>
+                            <span
+                              title={transaction.transactionId}
+                              className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
+                            >
+                              {transaction.transactionId}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              title={transaction.blockId}
+                              className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
+                            >
+                              {transaction.blockId}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              title={transaction.ownerAddress}
+                              className="block font-mono text-sm text-zinc-700 text-ellipsis whitespace-nowrap overflow-hidden w-full max-w-xs"
+                            >
+                              {transaction.ownerAddress}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="inline-block bg-zinc-100 font-mono text-sm text-zinc-500 py-[2px] px-1 rounded-lg border border-zinc-200">
+                              {transaction.blockHeight}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="inline-block bg-zinc-100 font-mono text-sm text-zinc-500 py-[2px] px-1 rounded-lg border border-zinc-200">
+                              <time
+                                title={new Date(
+                                  transaction.timestamp * 1000
+                                ).toLocaleString()}
+                                dateTime={transaction.timestamp}
+                              >
+                                {transaction.timestamp}
+                              </time>
+                            </span>
+                          </td>
+                          <td>
+                            {transaction.after === null ? (
+                            <div className="bg-white leading-8 px-3 inline-flex justify-center items-center rounded-lg">
+                              <IconLoader2 size={16} className=" text-zinc-500 animate-spin mr-2" />
+                              <span className="text-sm text-zinc-500 font-medium">
+                                Retrieving
+                              </span>
+                            </div>)
+                            : <button
+                              disabled={isLoading || isMutationLoading}
+                              onClick={() => {
+                                setModalData(transaction);
+                                setModal(transaction.transactionId);
+                                setModalNav({
+                                  prev: transactionsList.data?.data?.[key - 1]
+                                    ? {
+                                        ...transactionsList.data?.data?.[
+                                          key - 1
+                                        ],
+                                        index: key - 1,
+                                      }
+                                    : undefined,
+                                  next: transactionsList.data?.data?.[key + 1]
+                                    ? {
+                                        ...transactionsList.data?.data?.[
+                                          key + 1
+                                        ],
+                                        index: key + 1,
+                                      }
+                                    : undefined,
+                                });
+                              }}
+                              type="button"
+                              className="disabled:opacity-50 disabled:bg-zinc-100 group w-full inline-flex justify-center bg-white hover:bg-zinc-50 items-center border border-zinc-100 leading-8 px-3 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
+                            >
+                              <IconHistory
+                                size={16}
+                                className="mr-1 text-zinc-300"
+                              />
+                              View Details
+                            </button>}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </section>
+
+              <button
+                type="button"
+                className="group w-full justify-center bg-white hover:bg-zinc-50 inline-flex items-center border border-zinc-100 leading-[3rem] pl-4 pr-6 rounded-lg text-zinc-800 font-medium text-sm transition-colors ease-in-out duration-200"
+              >
+                Load More
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="bg-white shadow-sm p-8 inline-flex justify-center items-center rounded-lg">
+                <IconLoader2 className=" text-zinc-500 animate-spin mr-2" />
+                <span className="text-sm text-zinc-500 font-medium">
+                  Retrieving Transactions
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

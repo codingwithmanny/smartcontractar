@@ -2,19 +2,26 @@
 // ========================================================
 import nodemailer from "nodemailer";
 
+// Config
+// ========================================================
+const config =
+  true || process.env.NODE_ENV === "production"
+    ? {
+        host: `${process.env.EMAIL_HOST}`,
+        secure: true,
+        port: parseInt(`${process.env.EMAIL_PORT}`),
+        auth: {
+          user: `${process.env.EMAIL_AUTH_USER}`,
+          pass: `${process.env.EMAIL_AUTH_PASSWORD}`,
+        },
+      }
+    : {
+        url: `${process.env.EMAIL_SERVER}`,
+      };
+
 // Configured Mail Server
 // ========================================================
-const transporter = nodemailer.createTransport({
-  // url: 'smtp://resend:re_123456789@localhost:1025',
-  url: `${process.env.EMAIL_SERVER}`,
-  // host: 'smtp.resend.com',
-  // secure: true,
-  // port: 465,
-  // auth: {
-  //   user: 'resend',
-  //   pass: 're_123456789',
-  // },
-});
+const transporter = nodemailer.createTransport(config);
 
 // Exports
 // ========================================================

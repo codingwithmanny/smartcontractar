@@ -28,6 +28,36 @@ export const GET = async (
       .where("contractId", "=", contractId)
       .executeTakeFirstOrThrow();
 
+      const transactionsLeft = await db
+      .selectFrom("transactions")
+      .select([
+        "id",
+        "contractId",
+        "transactionId",
+        "inputs",
+        "timestamp",
+        "ownerAddress",
+        "before",
+        "after",
+      ])
+      .where("contractId", "=", contract.id)
+      .where("before", "is", null)
+      .orderBy("timestamp", "asc")
+      .execute();
+
+      if (transactionsLeft.length === 0) {
+        return NextResponse.json(
+          {
+            data: {
+              jobs: 0,
+            },
+          },
+          {
+            status: 200,
+          }
+        );
+      }
+
     const transactionsRemaning = await db
       .selectFrom("transactions")
       .select([

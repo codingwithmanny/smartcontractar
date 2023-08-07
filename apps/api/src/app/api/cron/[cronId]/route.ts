@@ -6,15 +6,38 @@ import { OperandValueExpressionOrList } from "kysely";
 import { db } from "@/db/kysely";
 import { Database } from "@/db/types";
 import mailer from "@/email/mailer";
+import cors from "@/libs/cors";
+import { Client } from "@upstash/qstash";
+
+// Config
+// ========================================================
+const client = new Client({
+  token: `${process.env.QSTASH_TOKEN}`,
+});
+const WARP_GATEWAY = "https://gateway.warp.cc/gateway";
 
 // Functions
 // ========================================================
+/**
+ * Cors options
+ * @param request
+ * @returns
+ */
+export const OPTIONS = async (request: NextRequest) => {
+  return cors(
+    request,
+    new Response(null, {
+      status: 204,
+    })
+  );
+};
+
 /**
  * Read
  * @param request
  * @returns
  */
-export const GET = async (
+export const POST = async (
   _request: NextRequest,
   { params }: { params: { cronId: string } }
 ) => {
@@ -49,8 +72,32 @@ export const GET = async (
       )
       .executeTakeFirstOrThrow();
 
-    // 0 - Check if already complete
-    if (queryReadCron.status === "COMPLETE") {
+    const expirationValue = parseInt(queryReadCron.expirationValue, 0);
+    const attempts =
+      typeof queryReadCron.failedAttempts === "number"
+        ? queryReadCron.failedAttempts
+        : parseInt(queryReadCron.successfulAttempts as unknown as string, 0);
+
+    // 0 - Check if already completed
+    if (queryReadCron.status === "COMPLETED" || attempts >= expirationValue) {
+      if (queryReadCron.status !== "COMPLETED" && attempts >= expirationValue) {
+        // Close the cron job
+        try {
+          await db
+            .updateTable("notifications")
+            .set({
+              status: "COMPLETED",
+            })
+            .where("id", "=", queryReadCron.id)
+            .execute();
+          await client.schedules.delete({
+            id: queryReadCron.jobId as string,
+          });
+        } catch (error) {
+          // Do nothing
+        }
+      }
+
       // Return
       return NextResponse.json(
         {
@@ -70,6 +117,7 @@ export const GET = async (
       .orderBy("timestamp", "desc")
       .executeTakeFirstOrThrow();
 
+    // Keep - needed for eval
     const currentState: { [key: string]: any } =
       (latestTransaction?.after as unknown) ?? {};
 
@@ -87,14 +135,9 @@ export const GET = async (
         queryReadCron.operator
       } ${parseType(queryReadCron.value, queryReadCron.valueType)}`
     );
-    console.log({ eval: `currentState?.${queryReadCron.object} ${
-        queryReadCron.operator
-      } ${parseType(queryReadCron.value, queryReadCron.valueType)}` });
-    console.log({ currentState });
-    console.log({ result });
 
     // 2 - Send email
-    if (result) {
+    if (false && result) {
       await mailer.sendMail({
         from: `${process.env.EMAIL_FROM}`,
         to: `${queryReadCron.email}`,
@@ -103,27 +146,62 @@ export const GET = async (
             <h1>SmartContractAR Notification</h1>
             <p>Notification ID: ${queryReadCron.id}</p>
             <p>Contract ID: ${queryReadCron.contractId}</p>
-            <p><a href="http://localhost:5173/contract/${queryReadCron.contractId}/notifications" target="_blank">http://localhost:5173/contract/${queryReadCron.contractId}/notifications</a></p>
-            <pre><code>${queryReadCron.object} ${queryReadCron.operator} ${parseType(queryReadCron.value, queryReadCron.valueType)}</code></pre>
+            <p><a href="${process.env.DOMAIN_URL}/contract/${
+          queryReadCron.contractId
+        }/notifications" target="_blank">${process.env.DOMAIN_URL}/contract/${
+          queryReadCron.contractId
+        }/notifications</a></p>
+            <pre><code>${queryReadCron.object} ${
+          queryReadCron.operator
+        } ${parseType(
+          queryReadCron.value,
+          queryReadCron.valueType
+        )}</code></pre>
         </div>`,
       });
     }
 
     // 3 - Close job
-    // @TODO - upstash
+    if (result && queryReadCron.jobId) {
+      await client.schedules.delete({
+        id: queryReadCron.jobId as string,
+      });
+    }
 
     // 4 - Update database
-    // @TODO - fix increment integers
+    const successfulAttempts =
+      typeof queryReadCron?.successfulAttempts === "string"
+        ? parseInt(queryReadCron?.successfulAttempts, 0)
+        : queryReadCron?.successfulAttempts ?? 0;
+
+    const failedAttempts =
+      typeof queryReadCron?.failedAttempts === "string"
+        ? parseInt(queryReadCron?.failedAttempts, 0)
+        : queryReadCron?.failedAttempts ?? 0;
     const updateValues = {
       status: result ? "COMPLETED" : "RUNNING",
-      successfulAttempts: result
-        ? (queryReadCron?.successfulAttempts ?? 0) + 1
-        : queryReadCron?.successfulAttempts ?? 0,
-      failedAttempts: !result
-        ? (queryReadCron?.failedAttempts ?? 0) + 1
-        : queryReadCron?.failedAttempts ?? 0,
+      successfulAttempts: result ? successfulAttempts + 1 : successfulAttempts,
+      failedAttempts: !result ? failedAttempts + 1 : failedAttempts,
       lastCheckedAt: new Date() as any,
     };
+
+    // 5 - Pull latest transactions
+    const contract = await db
+      .selectFrom("contracts")
+      .select(["id", "contractId"])
+      .where(
+        "id",
+        "=",
+        queryReadCron.contractId as OperandValueExpressionOrList<
+          Database,
+          "contracts",
+          "id"
+        >
+      )
+      .execute();
+    fetch(
+      `${process.env.API_SERVICE_URL}/contracts/${contract?.[0]?.contractId}/transactions/pull`
+    );
 
     const notification = await db
       .updateTable("notifications")
@@ -161,7 +239,7 @@ export const GET = async (
       }
     );
   } catch (error: any) {
-    console.log(error)
+    console.log(error);
     // Failure
     return NextResponse.json(
       {

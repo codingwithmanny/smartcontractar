@@ -38,6 +38,9 @@ importers:
       '@types/react-dom':
         specifier: 18.2.7
         version: 18.2.7
+      '@upstash/qstash':
+        specifier: ^0.3.6
+        version: 0.3.6
       arweavekit:
         specifier: ^1.4.8
         version: 1.4.8(@solana/web3.js@1.78.3)(pg@8.11.2)(typescript@5.1.6)(warp-arbundles@1.0.2)
@@ -704,6 +707,10 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
+
+  /@deno/shim-crypto@0.3.1:
+    resolution: {integrity: sha512-ed4pNnfur6UbASEgF34gVxR9p7Mc3qF+Ygbmjiil8ws5IhNFhPDFy5vE5hQAUA9JmVsSxXPcVLM5Rf8LOZqQ5Q==}
+    dev: false
 
   /@emotion/cache@10.0.29:
     resolution: {integrity: sha512-fU2VtSVlHiF27empSbxi1O2JFdNWZO+2NFHfwO0pxgTep6Xa3uGb+3pVKfLww2l/IBGLNEZl5Xf/++A4wAYDYQ==}
@@ -2839,6 +2846,12 @@ packages:
       '@typescript-eslint/types': 6.0.0
       eslint-visitor-keys: 3.4.2
     dev: true
+
+  /@upstash/qstash@0.3.6:
+    resolution: {integrity: sha512-NKN4jbPhB5lfHoSIaU7AuQ3F+yGS20e/FBRiUuPetcKoi354wHhKj9AJFfkFT5SSeLq0XEsXRNynm8gqCS4HjQ==}
+    dependencies:
+      '@deno/shim-crypto': 0.3.1
+    dev: false
 
   /@vitejs/plugin-react@4.0.3(vite@4.4.5):
     resolution: {integrity: sha512-pwXDog5nwwvSIzwrvYYmA2Ljcd/ZNlcsSG2Q9CNDBwnsd55UGAyr2doXtB5j+2uymRCnCfExlznzzSFbBRcoCg==}

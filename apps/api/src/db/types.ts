@@ -31,6 +31,7 @@ interface Contracts {
   sourceCode: string;
   totalTxs?: number;
   data: string;
+  updatedAt?: ColumnType<Date, string | undefined, never>
   createdAt: ColumnType<Date, string | undefined, never>
 }
 

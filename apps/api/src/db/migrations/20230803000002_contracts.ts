@@ -19,7 +19,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("sourceCode", "text", (col) => col.notNull())
     .addColumn("initState", "json", (col) => col.notNull())
     .addColumn("data", "json", (col) => col.notNull())
-    .addColumn("totalTxs", "numeric")
+    .addColumn("totalTxs", "integer")
+    .addColumn("updatedAt", "timestamp")
     .addColumn("createdAt", "timestamp", (col) =>
       col.defaultTo(sql`now()`).notNull()
     )
