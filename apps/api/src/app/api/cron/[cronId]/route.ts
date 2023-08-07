@@ -137,7 +137,7 @@ export const POST = async (
     );
 
     // 2 - Send email
-    if (false && result) {
+    if (result) {
       await mailer.sendMail({
         from: `${process.env.EMAIL_FROM}`,
         to: `${queryReadCron.email}`,
