@@ -201,7 +201,7 @@ export const POST = async (
       url: `${process.env.API_SERVICE_URL}/cron/${queryCreateNotification.id}`,
       body: {},
       headers: {},
-      cron: '*/2 * * * *' // Every 2 minutes
+      cron: '* * * * *' // Every minute
     };
 
     // @TODO: Add cron validation
