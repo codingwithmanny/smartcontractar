@@ -43,7 +43,7 @@ const ContractState = () => {
       const response = await fetch(
         `${
           import.meta.env.VITE_API_URL
-        }/contracts/${contractId}/transactions?order=timestamp&sort=desc&limit=1`
+        }/contracts/${contractId}/transactions?order=createdAt&sort=desc&limit=1`
       );
       if (!response.ok) {
         throw new Error("Network error.");
